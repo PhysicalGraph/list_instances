@@ -1,6 +1,9 @@
 package main
 
 import (
+        //"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+        "strings"
 	"net"
 	"os"
 	"sort"
@@ -13,16 +16,26 @@ type instance struct {
 	*ec2.Instance
 	name      string
 	privateIP net.IP
+        ipv6_addresses string
 }
 
 func newInstance(i *ec2.Instance) (ret instance) {
 	ret.Instance = i
 	ret.privateIP = net.ParseIP(*i.PrivateIpAddress)
+        ipv6_addresses := []string{}
+        for _, network := range i.NetworkInterfaces {
+           for _, ipv6 := range network.Ipv6Addresses {
+               //fmt.Println(*i.InstanceId, aws.StringValue(ipv6.Ipv6Address))
+               ipv6_addresses = append(ipv6_addresses, aws.StringValue(ipv6.Ipv6Address))
+           }
+        }
 	for _, t := range i.Tags {
 		if *t.Key == "Name" {
 			ret.name = *t.Value
 		}
 	}
+        ret.ipv6_addresses = strings.Join(ipv6_addresses,", ")
+        //fmt.Println(ret.ipv6_addresses)
 	return ret
 }
 
@@ -32,6 +45,7 @@ func (i *instance) toRow() []string {
 		*i.InstanceId,
 		stringify(i.PublicIpAddress),
 		*i.PrivateIpAddress,
+                i.ipv6_addresses,
 		stringify(i.KeyName),
 	}
 }
@@ -47,7 +61,7 @@ type instances []*instance
 
 func (s instances) printTable() {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Id", "PublicIP", "PrivateIP", "Key"})
+	table.SetHeader([]string{"Name", "Id", "PublicIP", "PrivateIP", "Ipv6", "Key"})
 	for _, i := range s {
 		table.Append(i.toRow())
 	}
