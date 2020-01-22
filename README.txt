@@ -5,7 +5,7 @@ add this function to your bashrc after building it with build.sh
 build.sh will create a docker container and a binary that you can use directly
 
 list_instances() { 
-    docker run -it -e AWS_PROFILE=$AWS_PROFILE -v $HOME/.aws:/root/.aws eedgar/list_instances:latest ./list_instances $*
+    docker run -it -e AWS_PROFILE=$AWS_PROFILE -v $HOME/.aws:/root/.aws smartthings-docker-deploy.jfrog.io/docker-deploy/list_instances:latest ./list_instances $*
 }
 
 
