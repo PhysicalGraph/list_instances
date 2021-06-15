@@ -1,4 +1,4 @@
-package main // import "github.com/eedgar/list_instances"
+package main
 
 
 import (
